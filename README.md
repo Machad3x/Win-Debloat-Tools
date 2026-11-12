@@ -73,6 +73,9 @@ Code located in the `main` branch is considered bleeding-edge, but big features/
 - Run `OpenTerminalHere.cmd` (try to `run as admin` if nothing happens at all).
 - Copy and Paste one of the lines below on your **Terminal** to unblock the scripts and execute it:
 
+> [!NOTE]
+> **The GUI version is recommended.** It exposes all tweaks (including the optional aggressive gaming tweaks) in a user-friendly way and is the safest way to apply/revert changes.
+
 ### GUI Version
 
 ```ps1
