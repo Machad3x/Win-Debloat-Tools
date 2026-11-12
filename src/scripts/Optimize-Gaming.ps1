@@ -166,6 +166,22 @@ function Optimize-Gaming() {
                 } Else {
                     Remove-ItemPropertyVerified -Path $_.PSPath -Name "PreferSystemMemoryContiguous"
                 }
+                # Disable NVIDIA telemetry (hellzerg/optimizer)
+                If (!$Revert) {
+                    Try {
+                        $NvFtsPath = "HKLM:\\SOFTWARE\\NVIDIA Corporation\\Global\\FTS"
+                        If (!(Test-Path "$NvFtsPath")) { New-Item -Path "$NvFtsPath" -Force | Out-Null }
+                        Set-ItemPropertyVerified -Path "$NvFtsPath" -Name "EnableRID44231" -Type DWord -Value 0
+                        Set-ItemPropertyVerified -Path "$NvFtsPath" -Name "EnableRID64640" -Type DWord -Value 0
+                        Set-ItemPropertyVerified -Path "$NvFtsPath" -Name "EnableRID66610" -Type DWord -Value 0
+                        $NvCpPath = "HKLM:\\SOFTWARE\\NVIDIA Corporation\\NvControlPanel2\\Client"
+                        If (Test-Path "$NvCpPath") { Set-ItemPropertyVerified -Path "$NvCpPath" -Name "OptInOrOutPreference" -Type DWord -Value 0 }
+                        Stop-Service -Name "NvTelemetryContainer" -Force -ErrorAction SilentlyContinue
+                        Set-Service -Name "NvTelemetryContainer" -StartupType Disabled -ErrorAction SilentlyContinue
+                    } Catch {
+                        Write-Status -Types "?", $TweakType -Status "Could not disable NVIDIA telemetry automatically." -Warning
+                    }
+                }
                 Write-Status -Types "@", $TweakType -Status "NVIDIA checklist: Low Latency Mode = On/Ultra, Power Management = Prefer Maximum Performance, Texture Filtering = High Performance, Shader Cache = Driver Default or larger (never disabled), enable G-SYNC/Adaptive Sync, keep drivers updated. Advanced clock locking (DisableDynamicPstate/P-State 0) only with benchmarking." -Warning
             } ElseIf ($GpuDescriptor -match 'AMD|Radeon') {
                 Write-Caption "AMD GPU detected: $GpuDescriptor"
@@ -193,6 +209,28 @@ function Optimize-Gaming() {
     } Else {
         Write-Status -Types "?", $TweakType -Status "GPU class registry path not found, skipping vendor-specific tweaks." -Warning
     }
+
+    Write-Section "Advanced Multimedia Profile (hellzerg/optimizer)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NoLazyMode" -Type DWord -Value 1
+        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "AlwaysOn" -Type DWord -Value 1
+        $LowLatencyPath = "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Low Latency"
+        If (!(Test-Path "$LowLatencyPath")) { New-Item -Path "$LowLatencyPath" -Force | Out-Null }
+        Set-ItemPropertyVerified -Path "$LowLatencyPath" -Name "GPU Priority" -Type DWord -Value 0
+        Set-ItemPropertyVerified -Path "$LowLatencyPath" -Name "Priority" -Type DWord -Value 8
+        Set-ItemPropertyVerified -Path "$LowLatencyPath" -Name "Scheduling Category" -Type String -Value "Medium"
+        Set-ItemPropertyVerified -Path "$LowLatencyPath" -Name "SFIO Priority" -Type String -Value "High"
+    } Else {
+        Remove-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NoLazyMode"
+        Remove-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "AlwaysOn"
+        Remove-ItemPropertyVerified -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Low Latency" -Name "GPU Priority"
+        Remove-ItemPropertyVerified -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Low Latency" -Name "Priority"
+        Remove-ItemPropertyVerified -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Low Latency" -Name "Scheduling Category"
+        Remove-ItemPropertyVerified -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Low Latency" -Name "SFIO Priority"
+    }
+
+    Write-Section "HPET (Advanced, Use At Own Risk)"
+    Write-Status -Types "@", $TweakType -Status "HPET tweaks are NOT applied automatically. Run manually if desired: bcdedit /deletevalue useplatformclock ; bcdedit /set disabledynamictick yes (revert: bcdedit /set useplatformclock true ; bcdedit /set disabledynamictick no)." -Warning
 
     Write-Section "Shader Cache"
     Write-Status -Types "+", $TweakType -Status "Increasing Windows D3D shader cache size limit to 4096 MB..."
