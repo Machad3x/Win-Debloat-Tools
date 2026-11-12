@@ -229,8 +229,16 @@ function Optimize-Gaming() {
         Remove-ItemPropertyVerified -Path "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Low Latency" -Name "SFIO Priority"
     }
 
-    Write-Section "HPET (Advanced, Use At Own Risk)"
-    Write-Status -Types "@", $TweakType -Status "HPET tweaks are NOT applied automatically. Run manually if desired: bcdedit /deletevalue useplatformclock ; bcdedit /set disabledynamictick yes (revert: bcdedit /set useplatformclock true ; bcdedit /set disabledynamictick no)." -Warning
+    Write-Section "HPET (Disabled By Default)"
+    If (!$Revert) {
+        Write-Status -Types "-", $TweakType -Status "Disabling HPET (use at own risk)..."
+        bcdedit /deletevalue useplatformclock | Out-Host
+        bcdedit /set disabledynamictick yes | Out-Host
+    } Else {
+        Write-Status -Types "*", $TweakType -Status "Re-enabling HPET..."
+        bcdedit /set useplatformclock true | Out-Host
+        bcdedit /set disabledynamictick no | Out-Host
+    }
 
     Write-Section "Shader Cache"
     Write-Status -Types "+", $TweakType -Status "Increasing Windows D3D shader cache size limit to 4096 MB..."
