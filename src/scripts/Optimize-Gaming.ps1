@@ -56,19 +56,7 @@ function Optimize-Gaming() {
     Set-ItemPropertyVerified -Path "$PathToCUGameBar" -Name "AllowAutoGameMode" -Type DWord -Value 1
     Set-ItemPropertyVerified -Path "$PathToCUGameBar" -Name "AutoGameModeEnabled" -Type DWord -Value 1
 
-    Write-Status -Types $EnableStatus[0].Symbol, $TweakType -Status "$($EnableStatus[0].Status) fullscreen optimizations globally..."
-    If (!$Revert) {
-        If (!(Test-Path "$PathToCUGameConfigStore")) { New-Item -Path "$PathToCUGameConfigStore" -Force | Out-Null }
-        Set-ItemPropertyVerified -Path "$PathToCUGameConfigStore" -Name "GameDVR_FSEBehaviorMode" -Type DWord -Value 2
-        Set-ItemPropertyVerified -Path "$PathToCUGameConfigStore" -Name "GameDVR_HonorUserFSEBehaviorMode" -Type DWord -Value 1
-        Set-ItemPropertyVerified -Path "$PathToCUGameConfigStore" -Name "GameDVR_FSEBehavior" -Type DWord -Value 2
-        Set-ItemPropertyVerified -Path "$PathToCUGameConfigStore" -Name "GameDVR_DXGIHonorFSEWindowsCompatible" -Type DWord -Value 1
-    } Else {
-        Remove-ItemPropertyVerified -Path "$PathToCUGameConfigStore" -Name "GameDVR_FSEBehaviorMode"
-        Remove-ItemPropertyVerified -Path "$PathToCUGameConfigStore" -Name "GameDVR_HonorUserFSEBehaviorMode"
-        Remove-ItemPropertyVerified -Path "$PathToCUGameConfigStore" -Name "GameDVR_FSEBehavior"
-        Remove-ItemPropertyVerified -Path "$PathToCUGameConfigStore" -Name "GameDVR_DXGIHonorFSEWindowsCompatible"
-    }
+    Write-Status -Types "+", $TweakType -Status "Keeping fullscreen optimizations enabled for better performance..."
 
     Write-Status -Types $EnableStatus[0].Symbol, $TweakType -Status "$($EnableStatus[0].Status) Game DVR background recording..."
     If (!$Revert) {
