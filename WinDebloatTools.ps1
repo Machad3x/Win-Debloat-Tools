@@ -189,7 +189,7 @@ function Show-GUI() {
     $RemoveMSEdge = New-Button -Text "Remove Microsoft Edge" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.ButtonHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $RemoveWindowsOld -MarginTop $LayoutT1.DistanceBetweenElements -ForeColor $Colors.WarningYellow
     $RemoveOneDrive = New-Button -Text "Remove OneDrive" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.ButtonHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $RemoveMSEdge -MarginTop $LayoutT1.DistanceBetweenElements -ForeColor $Colors.WarningYellow
     $RemoveXbox = New-Button -Text "Remove Xbox" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.ButtonHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $RemoveOneDrive -MarginTop $LayoutT1.DistanceBetweenElements -ForeColor $Colors.WarningYellow
-    $PictureBox1 = New-PictureBox -ImageLocation "$PSScriptRoot\src\assets\script-image.png" -Width $LayoutT1.PanelElementWidth -Height (($LayoutT1.ButtonHeight * 4) + ($LayoutT1.DistanceBetweenElements * 4)) -LocationX $LayoutT1.PanelElementX -ElementBefore $RemoveXbox -MarginTop $LayoutT1.DistanceBetweenElements -SizeMode 'Zoom'
+    $OptimizeGamingOptional = New-Button -Text "Optimize Gaming (Optional)" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.ButtonHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $RemoveXbox -MarginTop $LayoutT1.DistanceBetweenElements -ForeColor $Colors.WarningYellow    $PictureBox1 = New-PictureBox -ImageLocation "$PSScriptRoot\src\assets\script-image.png" -Width $LayoutT1.PanelElementWidth -Height (($LayoutT1.ButtonHeight * 4) + ($LayoutT1.DistanceBetweenElements * 4)) -LocationX $LayoutT1.PanelElementX -ElementBefore $RemoveXbox -MarginTop $LayoutT1.DistanceBetweenElements -SizeMode 'Zoom'
 
     $ClInstallSystemApps = New-Label -Text "Install System Apps" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CaptionLabelHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[2] -FontStyle 'Bold' -ElementBefore $PictureBox1
     $InstallDolbyAudio = New-Button -Text "Dolby Audio" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.ButtonHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $ClInstallSystemApps -MarginTop $LayoutT1.DistanceBetweenElements
@@ -464,7 +464,7 @@ function Show-GUI() {
     $TabSettings.Controls.AddRange(@($TlSettings, $T3PanelPackageManagersSettings))
     # Add Elements to each Tab Panel
     $T1Panel1.Controls.AddRange(@($ClCustomizeFeatures, $CbDarkTheme, $CbActivityHistory, $CbBackgroundsApps, $CbClipboardHistory, $CbClipboardSyncAcrossDevice, $CbCortana, $CbHibernate, $CbLegacyContextMenu, $CbLocationTracking, $CbNewsAndInterest, $CbOldVolumeControl, $CbOnlineSpeechRecognition, $CbPhoneLink, $CbPhotoViewer, $CbSearchAppForUnknownExt, $CbTelemetry, $CbWindowsSpotlight, $CbXboxGameBarDVRandMode))
-    $T1Panel2.Controls.AddRange(@($ClDebloatTools, $ApplyTweaks, $UndoTweaks, $DiskCleanUp, $RemoveTemporaryFiles, $RemoveWindowsOld, $RemoveMSEdge, $RemoveOneDrive, $RemoveXbox, $PictureBox1))
+    $T1Panel2.Controls.AddRange(@($ClDebloatTools, $ApplyTweaks, $UndoTweaks, $DiskCleanUp, $RemoveTemporaryFiles, $RemoveWindowsOld, $RemoveMSEdge, $RemoveOneDrive, $RemoveXbox, $OptimizeGamingOptional, $PictureBox1))
     $T1Panel2.Controls.AddRange(@($ClInstallSystemApps, $InstallDolbyAudio, $InstallMicrosoftEdge, $InstallOneDrive, $InstallPaintPaint3D, $InstallPhoneLink, $InstallQuickAssist, $InstallSoundRecorder, $InstallTaskbarWidgets, $InstallUWPWMediaPlayer, $InstallXbox))
     $T1Panel2.Controls.AddRange(@($ClOtherTools, $RandomizeSystemColor, $ReinstallBloatApps, $RepairWindows, $ShowDebloatInfo))
     $T1Panel3.Controls.AddRange(@($ClWindowsUpdate, $CbAutomaticWindowsUpdate))
@@ -525,6 +525,7 @@ function Show-GUI() {
                 "Optimize-Privacy.ps1",
                 "Optimize-Performance.ps1",
                 "Optimize-Gaming.ps1",
+                "Optimize-Gaming-Optional.ps1",
                 "Register-PersonalTweaksList.ps1",
                 "Remove-CapabilitiesList.ps1",
                 "Optimize-WindowsFeaturesList.ps1",
@@ -561,6 +562,12 @@ function Show-GUI() {
 
     $RemoveXbox.Add_Click( {
             Open-PowerShellFilesCollection -RelativeLocation "src\scripts" -Scripts @("Remove-Xbox.ps1") -DoneTitle $DoneTitle -DoneMessage $DoneMessage
+            $PictureBox1.ImageLocation = "$PSScriptRoot\src\assets\script-image2.png"
+            $Form.Update()
+        })
+
+    $OptimizeGamingOptional.Add_Click( {
+            Open-PowerShellFilesCollection -RelativeLocation "src\scripts" -Scripts @("Optimize-Gaming-Optional.ps1") -DoneTitle $DoneTitle -DoneMessage $DoneMessage
             $PictureBox1.ImageLocation = "$PSScriptRoot\src\assets\script-image2.png"
             $Form.Update()
         })
