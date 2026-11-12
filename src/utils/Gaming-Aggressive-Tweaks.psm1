@@ -267,3 +267,132 @@ function Disable-RecallCopilotWidgetsOptimization() {
     Set-ItemPropertyVerified -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarDa" -Type DWord -Value 1
     Remove-ItemPropertyVerified -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" -Name "DisableAIDataAnalysis"
 }
+
+
+function Enable-MpoMinFpsOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Disabling MPO minimum FPS requirement..."
+    Set-ItemPropertyVerified -Path "HKLM:\SOFTWARE\Microsoft\Windows\Dwm" -Name "OverlayMinFPS" -Type DWord -Value 0
+}
+function Disable-MpoMinFpsOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Restoring MPO minimum FPS requirement..."
+    Remove-ItemPropertyVerified -Path "HKLM:\SOFTWARE\Microsoft\Windows\Dwm" -Name "OverlayMinFPS"
+}
+
+function Enable-DisableAllOverlaysOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Disabling hardware overlays..."
+    Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "DisableOverlays" -Type DWord -Value 1
+}
+function Disable-DisableAllOverlaysOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Re-enabling hardware overlays..."
+    Remove-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "DisableOverlays"
+}
+
+function Enable-NagleAlgorithmOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Disabling Nagle's algorithm (per interface)..."
+    Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces" -ErrorAction SilentlyContinue | ForEach-Object {
+        Set-ItemPropertyVerified -Path $_.PSPath -Name "TcpAckFrequency" -Type DWord -Value 1 -ErrorAction SilentlyContinue
+        Set-ItemPropertyVerified -Path $_.PSPath -Name "TCPNoDelay" -Type DWord -Value 1 -ErrorAction SilentlyContinue
+    }
+}
+function Disable-NagleAlgorithmOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Restoring Nagle's algorithm..."
+    Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces" -ErrorAction SilentlyContinue | ForEach-Object {
+        Remove-ItemPropertyVerified -Path $_.PSPath -Name "TcpAckFrequency"
+        Remove-ItemPropertyVerified -Path $_.PSPath -Name "TCPNoDelay"
+    }
+}
+
+function Enable-VrrOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Enabling VRR optimizations..."
+    $p = "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences"
+    If (!(Test-Path $p)) { New-Item -Path $p -Force | Out-Null }
+    $cur = (Get-ItemProperty -Path $p -Name "DirectXUserGlobalSettings" -ErrorAction SilentlyContinue).DirectXUserGlobalSettings
+    If ([string]::IsNullOrWhiteSpace($cur)) { $cur = "" }
+    If ($cur -notmatch "VRROptimizeEnable") { $cur = ($cur.TrimEnd(";") + ";VRROptimizeEnable=1;") } else { $cur = $cur -replace "VRROptimizeEnable=\d", "VRROptimizeEnable=1" }
+    Set-ItemPropertyVerified -Path $p -Name "DirectXUserGlobalSettings" -Type String -Value $cur
+}
+function Disable-VrrOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Restoring VRR optimizations..."
+    $p = "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences"
+    $cur = (Get-ItemProperty -Path $p -Name "DirectXUserGlobalSettings" -ErrorAction SilentlyContinue).DirectXUserGlobalSettings
+    If ($cur) { $cur = $cur -replace "VRROptimizeEnable=\d", "VRROptimizeEnable=0"; Set-ItemPropertyVerified -Path $p -Name "DirectXUserGlobalSettings" -Type String -Value $cur }
+}
+
+function Enable-AutoHdrOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Enabling Auto HDR..."
+    $p = "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences"
+    If (!(Test-Path $p)) { New-Item -Path $p -Force | Out-Null }
+    $cur = (Get-ItemProperty -Path $p -Name "DirectXUserGlobalSettings" -ErrorAction SilentlyContinue).DirectXUserGlobalSettings
+    If ([string]::IsNullOrWhiteSpace($cur)) { $cur = "" }
+    If ($cur -notmatch "AutoHDREnable") { $cur = ($cur.TrimEnd(";") + ";AutoHDREnable=1;") } else { $cur = $cur -replace "AutoHDREnable=\d", "AutoHDREnable=1" }
+    Set-ItemPropertyVerified -Path $p -Name "DirectXUserGlobalSettings" -Type String -Value $cur
+}
+function Disable-AutoHdrOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Restoring Auto HDR..."
+    $p = "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences"
+    $cur = (Get-ItemProperty -Path $p -Name "DirectXUserGlobalSettings" -ErrorAction SilentlyContinue).DirectXUserGlobalSettings
+    If ($cur) { $cur = $cur -replace "AutoHDREnable=\d", "AutoHDREnable=0"; Set-ItemPropertyVerified -Path $p -Name "DirectXUserGlobalSettings" -Type String -Value $cur }
+}
+
+function Enable-NvidiaSharpeningOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Disabling legacy NVIDIA sharpening..."
+    Set-ItemPropertyVerified -Path "HKLM:\SOFTWARE\NVIDIA Corporation\Global\FTS" -Name "EnableGR535" -Type DWord -Value 0
+}
+function Disable-NvidiaSharpeningOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Restoring legacy NVIDIA sharpening..."
+    Set-ItemPropertyVerified -Path "HKLM:\SOFTWARE\NVIDIA Corporation\Global\FTS" -Name "EnableGR535" -Type DWord -Value 1
+}
+
+function Enable-AutoColorManagementOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Disabling auto color management..."
+    $p = "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\MonitorDataStore"
+    If (!(Test-Path $p)) { New-Item -Path $p -Force | Out-Null }
+    Set-ItemPropertyVerified -Path $p -Name "AutoColorManagementEnabled" -Type DWord -Value 0
+}
+function Disable-AutoColorManagementOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Re-enabling auto color management..."
+    Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\MonitorDataStore" -Name "AutoColorManagementEnabled" -Type DWord -Value 1
+}
+
+function Enable-AutostartDelayOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Enabling startup app delay (10s)..."
+    $p = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize"
+    If (!(Test-Path $p)) { New-Item -Path $p -Force | Out-Null }
+    Set-ItemPropertyVerified -Path $p -Name "StartupDelayInMSec" -Type DWord -Value 10000
+}
+function Disable-AutostartDelayOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Disabling startup app delay..."
+    Set-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize" -Name "StartupDelayInMSec" -Type DWord -Value 0
+}
+
+function Enable-BackgroundAppsOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Forcing deny background apps..."
+    foreach ($root in @("HKCU:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy","HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+        If (!(Test-Path $root)) { New-Item -Path $root -Force | Out-Null }
+        Set-ItemPropertyVerified -Path $root -Name "LetAppsRunInBackground" -Type DWord -Value 2
+    }
+}
+function Disable-BackgroundAppsOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Restoring background apps control..."
+    foreach ($root in @("HKCU:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy","HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy")) {
+        Remove-ItemPropertyVerified -Path $root -Name "LetAppsRunInBackground"
+    }
+}
+
+function Enable-MouseHoverTimeOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Setting mouse hover time to 1ms..."
+    Set-ItemPropertyVerified -Path "HKCU:\Control Panel\Mouse" -Name "MouseHoverTime" -Type String -Value "1"
+}
+function Disable-MouseHoverTimeOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Restoring mouse hover time (400ms)..."
+    Set-ItemPropertyVerified -Path "HKCU:\Control Panel\Mouse" -Name "MouseHoverTime" -Type String -Value "400"
+}
+
+function Enable-MenuShowDelayOptimization() {
+    Write-Status -Types "-", "GamingAgg" -Status "Setting menu show delay to 0..."
+    Set-ItemPropertyVerified -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type String -Value "0"
+}
+function Disable-MenuShowDelayOptimization() {
+    Write-Status -Types "+", "GamingAgg" -Status "Restoring menu show delay (400)..."
+    Set-ItemPropertyVerified -Path "HKCU:\Control Panel\Desktop" -Name "MenuShowDelay" -Type String -Value "400"
+}

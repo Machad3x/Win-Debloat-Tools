@@ -214,12 +214,20 @@ function Optimize-Gaming() {
     If (!$Revert) {
         Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NoLazyMode" -Type DWord -Value 1
         Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "AlwaysOn" -Type DWord -Value 1
+        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "SystemResponsiveness" -Type DWord -Value 10
         $LowLatencyPath = "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Low Latency"
         If (!(Test-Path "$LowLatencyPath")) { New-Item -Path "$LowLatencyPath" -Force | Out-Null }
         Set-ItemPropertyVerified -Path "$LowLatencyPath" -Name "GPU Priority" -Type DWord -Value 0
         Set-ItemPropertyVerified -Path "$LowLatencyPath" -Name "Priority" -Type DWord -Value 8
         Set-ItemPropertyVerified -Path "$LowLatencyPath" -Name "Scheduling Category" -Type String -Value "Medium"
         Set-ItemPropertyVerified -Path "$LowLatencyPath" -Name "SFIO Priority" -Type String -Value "High"
+        # Games task (Winhance complement)
+        $GamesTaskPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games"
+        If (!(Test-Path "$GamesTaskPath")) { New-Item -Path "$GamesTaskPath" -Force | Out-Null }
+        Set-ItemPropertyVerified -Path "$GamesTaskPath" -Name "Priority" -Type DWord -Value 6
+        Set-ItemPropertyVerified -Path "$GamesTaskPath" -Name "GPU Priority" -Type DWord -Value 8
+        Set-ItemPropertyVerified -Path "$GamesTaskPath" -Name "Scheduling Category" -Type String -Value "High"
+        Set-ItemPropertyVerified -Path "$GamesTaskPath" -Name "SFIO Priority" -Type String -Value "High"
     } Else {
         Remove-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NoLazyMode"
         Remove-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "AlwaysOn"
@@ -248,6 +256,72 @@ function Optimize-Gaming() {
         Set-ItemPropertyVerified -Path "$D3DPath" -Name "ShaderCacheSizeInMB" -Type DWord -Value 4096
     } Else {
         Remove-ItemPropertyVerified -Path "HKLM:\\SOFTWARE\\Microsoft\\Direct3D" -Name "ShaderCacheSizeInMB"
+    }
+
+    Write-Section "Hardware-Accelerated GPU Scheduling (Winhance)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Type DWord -Value 2
+    } Else {
+        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Type DWord -Value 1
+    }
+
+    Write-Section "Network Throttling (Winhance)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NetworkThrottlingIndex" -Type DWord -Value 10
+    } Else {
+        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NetworkThrottlingIndex" -Type DWord -Value 4294967295
+    }
+
+    Write-Section "Services Startup Timeout (Winhance)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "ServicesPipeTimeout" -Type DWord -Value 30000
+    } Else {
+        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "ServicesPipeTimeout" -Type DWord -Value 60000
+    }
+
+    Write-Section "Explorer & Desktop (Winhance)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "MultiTaskingAltTabFilter" -Type DWord -Value 0
+        Set-ItemPropertyVerified -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Type DWord -Value 100
+        Set-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Search\Preferences" -Name "WholeFileSystem" -Type DWord -Value 1 -ErrorAction SilentlyContinue
+        $D3DPath2 = "HKLM:\SOFTWARE\Microsoft\Direct3D"
+        If (!(Test-Path "$D3DPath2")) { New-Item -Path "$D3DPath2" -Force | Out-Null }
+    } Else {
+        Remove-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "MultiTaskingAltTabFilter"
+        Remove-ItemPropertyVerified -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality"
+        Remove-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Search\Preferences" -Name "WholeFileSystem"
+    }
+
+    Write-Section "Hardware-Accelerated GPU Scheduling (Winhance)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Type DWord -Value 2
+    } Else {
+        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Type DWord -Value 1
+    }
+
+    Write-Section "Network Throttling (Winhance)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NetworkThrottlingIndex" -Type DWord -Value 10
+    } Else {
+        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NetworkThrottlingIndex" -Type DWord -Value 4294967295
+    }
+
+    Write-Section "Services Startup Timeout (Winhance)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "ServicesPipeTimeout" -Type DWord -Value 30000
+    } Else {
+        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "ServicesPipeTimeout" -Type DWord -Value 60000
+    }
+
+    Write-Section "Explorer & Desktop (Winhance)"
+    If (!$Revert) {
+        Set-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "MultiTaskingAltTabFilter" -Type DWord -Value 0
+        Set-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Search\Preferences" -Name "WholeFileSystem" -Type DWord -Value 1 -ErrorAction SilentlyContinue
+        $D3DPath2 = "HKLM:\SOFTWARE\Microsoft\Direct3D"
+        If (!(Test-Path "$D3DPath2")) { New-Item -Path "$D3DPath2" -Force | Out-Null }
+    } Else {
+        Remove-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "MultiTaskingAltTabFilter"
+        Remove-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Search\Preferences" -Name "WholeFileSystem"
     }
 
     Write-Section "CPU Vendor Checklists"
