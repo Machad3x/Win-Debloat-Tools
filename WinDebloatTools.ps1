@@ -40,8 +40,8 @@ function Main() {
         Import-Module -DisableNameChecking "$PSScriptRoot\src\lib\ui\Show-MessageDialog.psm1" -Force
         Import-Module -DisableNameChecking "$PSScriptRoot\src\lib\ui\Ui-Helper.psm1" -Force
         Import-Module -DisableNameChecking "$PSScriptRoot\src\utils\Individual-Tweaks.psm1" -Force
+        Import-Module -DisableNameChecking "$PSScriptRoot\src\utils\Gaming-Aggressive-Tweaks.psm1" -Force
         Import-Module -DisableNameChecking "$PSScriptRoot\src\utils\Install-Individual-System-Apps.psm1" -Force
-
         Set-ConsoleStyle
 
         If ("$pwd" -notlike "$PSScriptRoot") {
@@ -146,7 +146,7 @@ function Show-GUI() {
     $TabSystemTweaks = New-TabPage -Name "Tab1" -Text "System Tweaks"
     $TabSoftwareInstall = New-TabPage -Name "Tab2" -Text "Software Install"
     $TabSettings = New-TabPage -Name "Tab3" -Text "Settings"
-
+    $TabGamingOptional = New-TabPage -Name "Tab4" -Text "Gaming (Optional)"
     $TlSystemTweaks = New-Label -Text "System Tweaks" -Width $LayoutT1.TotalWidth -Height $LayoutT1.TitleLabelHeight -LocationX 0 -LocationY $TitleLabelY -FontSize $LayoutT1.Heading[0] -FontStyle "Bold" -ForeColor $Colors.Cyan
     $ClSystemTweaks = New-Label -Text "Version $CurrentFileLastModified" -Width $LayoutT1.TotalWidth -Height $LayoutT1.CaptionLabelHeight -LocationX 0 -FontSize $LayoutT1.Heading[1] -ElementBefore $TlSystemTweaks -MarginTop $LayoutT1.DistanceBetweenElements -ForeColor $Colors.White
 
@@ -157,7 +157,7 @@ function Show-GUI() {
     $T1Panel2 = New-Panel -Width $LayoutT1.PanelWidth -Height $LayoutT1.PanelHeight -LocationX ($LayoutT1.PanelWidth * $CurrentPanelIndex) -ElementBefore $ClSystemTweaks
     $CurrentPanelIndex++
     $T1Panel3 = New-Panel -Width $LayoutT1.PanelWidth -Height $LayoutT1.PanelHeight -LocationX ($LayoutT1.PanelWidth * $CurrentPanelIndex) -ElementBefore $ClSystemTweaks
-
+    $T4Panel1 = New-Panel -Width $LayoutT1.TotalWidth -Height $LayoutT1.PanelHeight -LocationX 0 -LocationY 0 -HasScroll
     # ==> T1 Panel 1
     $ClCustomizeFeatures = New-Label -Text "Customize System Features" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CaptionLabelHeight -LocationX $LayoutT1.PanelElementX -LocationY 0 -FontSize $LayoutT1.Heading[2] -FontStyle 'Bold'
     $CbDarkTheme = New-CheckBox -Text "Enable Dark Theme" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $ClCustomizeFeatures
@@ -238,6 +238,25 @@ function Show-GUI() {
     $CbTakeOwnership = New-CheckBox -Text "Enable Take Ownership menu" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbMouseNaturalScroll
     $CbFastShutdownPCShortcut = New-CheckBox -Text "Enable Fast Shutdown shortcut" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbTakeOwnership
 
+    # ==> Gaming (Optional) Tab
+    $ClGamingOptional = New-Label -Text "Optional Aggressive Gaming Tweaks" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CaptionLabelHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[2] -FontStyle 'Bold'
+    $CbOptMemoryIntegrity = New-CheckBox -Text "Disable Memory Integrity (HVCI)" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $ClGamingOptional
+    $CbOptVirtualizationPlatform = New-CheckBox -Text "Disable VM Platform / Hyper-V" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptMemoryIntegrity
+    $CbOptCpuMitigations = New-CheckBox -Text "Disable CPU Mitigations (Spectre/Meltdown)" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptVirtualizationPlatform
+    $CbOptMpo = New-CheckBox -Text "Disable MPO" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptCpuMitigations
+    $CbOptGpuPreemption = New-CheckBox -Text "Disable GPU Preemption" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptMpo
+    $CbOptGpuPowerSaving = New-CheckBox -Text "Disable GPU Power Saving / Clock Gating" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptGpuPreemption
+    $CbOptNvidiaPstate = New-CheckBox -Text "Lock NVIDIA P-State 0" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptGpuPowerSaving
+    $CbOptUlps = New-CheckBox -Text "Disable ULPS (all AMD)" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptNvidiaPstate
+    $CbOptUnlockCores = New-CheckBox -Text "Unlock All CPU Cores" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptUlps
+    $CbOptDefenderRealtime = New-CheckBox -Text "Disable Defender Real-time" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptUnlockCores
+    $CbOptUsbSuspend = New-CheckBox -Text "Disable USB Selective Suspend" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptDefenderRealtime
+    $CbOptAudioEnhancements = New-CheckBox -Text "Disable Audio Enhancements" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptUsbSuspend
+    $CbOptGameBarComplete = New-CheckBox -Text "Disable Game Bar Completely" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptAudioEnhancements
+    $CbOptWindowsSearch = New-CheckBox -Text "Disable Windows Search Service" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptGameBarComplete
+    $CbOptSysMain = New-CheckBox -Text "Disable SysMain (Superfetch)" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptWindowsSearch
+    $CbOptAnimationsTransparency = New-CheckBox -Text "Disable Animations / Transparency" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptSysMain
+    $CbOptRecallCopilotWidgets = New-CheckBox -Text "Disable Recall / Copilot / Widgets" -Width $LayoutT1.PanelElementWidth -Height $LayoutT1.CheckBoxHeight -LocationX $LayoutT1.PanelElementX -FontSize $LayoutT1.Heading[3] -ElementBefore $CbOptAnimationsTransparency
     # ==> Tab 2
     $TlSoftwareInstall = New-Label -Text "Software Install" -Width $LayoutT2.TotalWidth -Height $LayoutT2.TitleLabelHeight -LocationX 0 -LocationY $TitleLabelY -FontSize $LayoutT2.Heading[0] -FontStyle "Bold" -ForeColor $Colors.Cyan
 
@@ -458,8 +477,9 @@ function Show-GUI() {
     # Add TabControl to the Form
     $Form.Controls.AddRange(@($FormTabControl))
     # Tabs
-    $FormTabControl.Controls.AddRange(@($TabSystemTweaks, $TabSoftwareInstall, $TabSettings))
+    $FormTabControl.Controls.AddRange(@($TabSystemTweaks, $TabSoftwareInstall, $TabSettings, $TabGamingOptional))
     $TabSystemTweaks.Controls.AddRange(@($TlSystemTweaks, $ClSystemTweaks, $T1Panel1, $T1Panel2, $T1Panel3))
+    $TabGamingOptional.Controls.AddRange(@($T4Panel1))
     $TabSoftwareInstall.Controls.AddRange(@($TlSoftwareInstall, $ClSoftwareInstall, $T2Panel1, $T2Panel2, $T2Panel3, $T2Panel4))
     $TabSettings.Controls.AddRange(@($TlSettings, $T3PanelPackageManagersSettings))
     # Add Elements to each Tab Panel
@@ -473,6 +493,7 @@ function Show-GUI() {
     $T1Panel3.Controls.AddRange(@($ClServices, $CbWindowsSearch))
     $T1Panel3.Controls.AddRange(@($ClWindowsCapabilities, $CbPowerShellISE))
     $T1Panel3.Controls.AddRange(@($ClMiscFeatures, $CbEncryptedDNS, $CbGodMode, $CbMouseAcceleration, $CbMouseNaturalScroll, $CbTakeOwnership, $CbFastShutdownPCShortcut))
+    $T4Panel1.Controls.AddRange(@($ClGamingOptional, $CbOptMemoryIntegrity, $CbOptVirtualizationPlatform, $CbOptCpuMitigations, $CbOptMpo, $CbOptGpuPreemption, $CbOptGpuPowerSaving, $CbOptNvidiaPstate, $CbOptUlps, $CbOptUnlockCores, $CbOptDefenderRealtime, $CbOptUsbSuspend, $CbOptAudioEnhancements, $CbOptGameBarComplete, $CbOptWindowsSearch, $CbOptSysMain, $CbOptAnimationsTransparency, $CbOptRecallCopilotWidgets))
 
     $T2Panel1.Controls.AddRange(@($UpgradeAll))
     $T2Panel1.Controls.AddRange(@($ClCpuGpuDrivers, $InstallAmdRyzenChipsetDriver, $InstallIntelDSA, $InstallNvidiaGeForceExperience, $InstallDDU, $InstallNVCleanstall))
@@ -967,6 +988,24 @@ function Show-GUI() {
                 $CbFastShutdownPCShortcut.Text = "[OFF] Fast Shutdown shortcut *"
             }
         })
+
+    $CbOptMemoryIntegrity.Add_Click( { If ($CbOptMemoryIntegrity.CheckState -eq "Checked") { Enable-MemoryIntegrityOptimization; $CbOptMemoryIntegrity.Text = "[ON]  Disable Memory Integrity (HVCI)" } Else { Disable-MemoryIntegrityOptimization; $CbOptMemoryIntegrity.Text = "[OFF] Disable Memory Integrity (HVCI) *" } })
+    $CbOptVirtualizationPlatform.Add_Click( { If ($CbOptVirtualizationPlatform.CheckState -eq "Checked") { Enable-VirtualizationPlatformOptimization; $CbOptVirtualizationPlatform.Text = "[ON]  Disable VM Platform / Hyper-V" } Else { Disable-VirtualizationPlatformOptimization; $CbOptVirtualizationPlatform.Text = "[OFF] Disable VM Platform / Hyper-V *" } })
+    $CbOptCpuMitigations.Add_Click( { If ($CbOptCpuMitigations.CheckState -eq "Checked") { Enable-CpuMitigationsOptimization; $CbOptCpuMitigations.Text = "[ON]  Disable CPU Mitigations" } Else { Disable-CpuMitigationsOptimization; $CbOptCpuMitigations.Text = "[OFF] Disable CPU Mitigations *" } })
+    $CbOptMpo.Add_Click( { If ($CbOptMpo.CheckState -eq "Checked") { Enable-MpoOptimization; $CbOptMpo.Text = "[ON]  Disable MPO" } Else { Disable-MpoOptimization; $CbOptMpo.Text = "[OFF] Disable MPO *" } })
+    $CbOptGpuPreemption.Add_Click( { If ($CbOptGpuPreemption.CheckState -eq "Checked") { Enable-GpuPreemptionOptimization; $CbOptGpuPreemption.Text = "[ON]  Disable GPU Preemption" } Else { Disable-GpuPreemptionOptimization; $CbOptGpuPreemption.Text = "[OFF] Disable GPU Preemption *" } })
+    $CbOptGpuPowerSaving.Add_Click( { If ($CbOptGpuPowerSaving.CheckState -eq "Checked") { Enable-GpuPowerSavingOptimization; $CbOptGpuPowerSaving.Text = "[ON]  Disable GPU Power Saving" } Else { Disable-GpuPowerSavingOptimization; $CbOptGpuPowerSaving.Text = "[OFF] Disable GPU Power Saving *" } })
+    $CbOptNvidiaPstate.Add_Click( { If ($CbOptNvidiaPstate.CheckState -eq "Checked") { Enable-NvidiaPstateOptimization; $CbOptNvidiaPstate.Text = "[ON]  Lock NVIDIA P-State 0" } Else { Disable-NvidiaPstateOptimization; $CbOptNvidiaPstate.Text = "[OFF] Lock NVIDIA P-State 0 *" } })
+    $CbOptUlps.Add_Click( { If ($CbOptUlps.CheckState -eq "Checked") { Enable-UlpsOptimization; $CbOptUlps.Text = "[ON]  Disable ULPS (all AMD)" } Else { Disable-UlpsOptimization; $CbOptUlps.Text = "[OFF] Disable ULPS (all AMD) *" } })
+    $CbOptUnlockCores.Add_Click( { If ($CbOptUnlockCores.CheckState -eq "Checked") { Enable-UnlockAllCoresOptimization; $CbOptUnlockCores.Text = "[ON]  Unlock All CPU Cores" } Else { Disable-UnlockAllCoresOptimization; $CbOptUnlockCores.Text = "[OFF] Unlock All CPU Cores *" } })
+    $CbOptDefenderRealtime.Add_Click( { If ($CbOptDefenderRealtime.CheckState -eq "Checked") { Enable-DefenderRealtimeOptimization; $CbOptDefenderRealtime.Text = "[ON]  Disable Defender Real-time" } Else { Disable-DefenderRealtimeOptimization; $CbOptDefenderRealtime.Text = "[OFF] Disable Defender Real-time *" } })
+    $CbOptUsbSuspend.Add_Click( { If ($CbOptUsbSuspend.CheckState -eq "Checked") { Enable-UsbSelectiveSuspendOptimization; $CbOptUsbSuspend.Text = "[ON]  Disable USB Selective Suspend" } Else { Disable-UsbSelectiveSuspendOptimization; $CbOptUsbSuspend.Text = "[OFF] Disable USB Selective Suspend *" } })
+    $CbOptAudioEnhancements.Add_Click( { If ($CbOptAudioEnhancements.CheckState -eq "Checked") { Enable-AudioEnhancementsOptimization; $CbOptAudioEnhancements.Text = "[ON]  Disable Audio Enhancements" } Else { Disable-AudioEnhancementsOptimization; $CbOptAudioEnhancements.Text = "[OFF] Disable Audio Enhancements *" } })
+    $CbOptGameBarComplete.Add_Click( { If ($CbOptGameBarComplete.CheckState -eq "Checked") { Enable-GameBarCompleteOptimization; $CbOptGameBarComplete.Text = "[ON]  Disable Game Bar Completely" } Else { Disable-GameBarCompleteOptimization; $CbOptGameBarComplete.Text = "[OFF] Disable Game Bar Completely *" } })
+    $CbOptWindowsSearch.Add_Click( { If ($CbOptWindowsSearch.CheckState -eq "Checked") { Enable-WindowsSearchOptimization; $CbOptWindowsSearch.Text = "[ON]  Disable Windows Search" } Else { Disable-WindowsSearchOptimization; $CbOptWindowsSearch.Text = "[OFF] Disable Windows Search *" } })
+    $CbOptSysMain.Add_Click( { If ($CbOptSysMain.CheckState -eq "Checked") { Enable-SysMainOptimization; $CbOptSysMain.Text = "[ON]  Disable SysMain" } Else { Disable-SysMainOptimization; $CbOptSysMain.Text = "[OFF] Disable SysMain *" } })
+    $CbOptAnimationsTransparency.Add_Click( { If ($CbOptAnimationsTransparency.CheckState -eq "Checked") { Enable-AnimationsTransparencyOptimization; $CbOptAnimationsTransparency.Text = "[ON]  Disable Animations / Transparency" } Else { Disable-AnimationsTransparencyOptimization; $CbOptAnimationsTransparency.Text = "[OFF] Disable Animations / Transparency *" } })
+    $CbOptRecallCopilotWidgets.Add_Click( { If ($CbOptRecallCopilotWidgets.CheckState -eq "Checked") { Enable-RecallCopilotWidgetsOptimization; $CbOptRecallCopilotWidgets.Text = "[ON]  Disable Recall / Copilot / Widgets" } Else { Disable-RecallCopilotWidgetsOptimization; $CbOptRecallCopilotWidgets.Text = "[OFF] Disable Recall / Copilot / Widgets *" } })
 
     $UpgradeAll.Add_Click( {
             Update-AllPackage
