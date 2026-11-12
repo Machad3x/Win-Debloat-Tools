@@ -147,7 +147,7 @@ function Optimize-Performance() {
 
     # Details: https://www.reddit.com/r/killerinstinct/comments/4fcdhy/an_excellent_guide_to_optimizing_your_windows_10/
     Write-Status -Types "+", $TweakType -Status "Reserving 100% of CPU to Multimedia/Gaming tasks..."
-    Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "SystemResponsiveness" -Type DWord -Value 0 # Default: 20
+    Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "SystemResponsiveness" -Type DWord -Value 10 # Default: 20 (values < 10 are clamped to 20)
     Write-Status -Types "+", $TweakType -Status "Dedicate more CPU/GPU usage to Gaming tasks..."
     Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfileOnGameTasks" -Name "GPU Priority" -Type DWord -Value 8 # Default: 8
     Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfileOnGameTasks" -Name "Priority" -Type DWord -Value 6 # Default: 2
