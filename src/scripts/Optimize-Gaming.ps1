@@ -296,38 +296,6 @@ function Optimize-Gaming() {
         Remove-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Search\Preferences" -Name "WholeFileSystem"
     }
 
-    Write-Section "Hardware-Accelerated GPU Scheduling (Winhance)"
-    If (!$Revert) {
-        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Type DWord -Value 2
-    } Else {
-        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" -Name "HwSchMode" -Type DWord -Value 1
-    }
-
-    Write-Section "Network Throttling (Winhance)"
-    If (!$Revert) {
-        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NetworkThrottlingIndex" -Type DWord -Value 10
-    } Else {
-        Set-ItemPropertyVerified -Path "$PathToLMMultimediaSystemProfile" -Name "NetworkThrottlingIndex" -Type DWord -Value 4294967295
-    }
-
-    Write-Section "Services Startup Timeout (Winhance)"
-    If (!$Revert) {
-        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "ServicesPipeTimeout" -Type DWord -Value 30000
-    } Else {
-        Set-ItemPropertyVerified -Path "HKLM:\SYSTEM\CurrentControlSet\Control" -Name "ServicesPipeTimeout" -Type DWord -Value 60000
-    }
-
-    Write-Section "Explorer & Desktop (Winhance)"
-    If (!$Revert) {
-        Set-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "MultiTaskingAltTabFilter" -Type DWord -Value 0
-        Set-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Search\Preferences" -Name "WholeFileSystem" -Type DWord -Value 1 -ErrorAction SilentlyContinue
-        $D3DPath2 = "HKLM:\SOFTWARE\Microsoft\Direct3D"
-        If (!(Test-Path "$D3DPath2")) { New-Item -Path "$D3DPath2" -Force | Out-Null }
-    } Else {
-        Remove-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "MultiTaskingAltTabFilter"
-        Remove-ItemPropertyVerified -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Search\Preferences" -Name "WholeFileSystem"
-    }
-
     Write-Section "CPU Vendor Checklists"
     If ($CpuName -match 'Ryzen') {
         Write-Status -Types "@", $TweakType -Status "Ryzen checklist: install AMD chipset driver, enable EXPO/XMP, PBO + Curve Optimizer (stability test), Smart Access Memory/ReBAR, keep Game Mode on (core parking on X3D), avoid manual core affinity." -Warning
