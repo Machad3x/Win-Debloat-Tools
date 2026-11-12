@@ -308,7 +308,9 @@ function Enable-VrrOptimization() {
     If (!(Test-Path $p)) { New-Item -Path $p -Force | Out-Null }
     $cur = (Get-ItemProperty -Path $p -Name "DirectXUserGlobalSettings" -ErrorAction SilentlyContinue).DirectXUserGlobalSettings
     If ([string]::IsNullOrWhiteSpace($cur)) { $cur = "" }
-    If ($cur -notmatch "VRROptimizeEnable") { $cur = ($cur.TrimEnd(";") + ";VRROptimizeEnable=1;") } else { $cur = $cur -replace "VRROptimizeEnable=\d", "VRROptimizeEnable=1" }
+    If ($cur -notmatch "VRROptimizeEnable") {
+        if ([string]::IsNullOrWhiteSpace($cur)) { $cur = "VRROptimizeEnable=1;" } else { $cur = ($cur.TrimEnd(";") + ";VRROptimizeEnable=1;") }
+    } else { $cur = $cur -replace "VRROptimizeEnable=\d", "VRROptimizeEnable=1" }
     Set-ItemPropertyVerified -Path $p -Name "DirectXUserGlobalSettings" -Type String -Value $cur
 }
 function Disable-VrrOptimization() {
@@ -324,7 +326,9 @@ function Enable-AutoHdrOptimization() {
     If (!(Test-Path $p)) { New-Item -Path $p -Force | Out-Null }
     $cur = (Get-ItemProperty -Path $p -Name "DirectXUserGlobalSettings" -ErrorAction SilentlyContinue).DirectXUserGlobalSettings
     If ([string]::IsNullOrWhiteSpace($cur)) { $cur = "" }
-    If ($cur -notmatch "AutoHDREnable") { $cur = ($cur.TrimEnd(";") + ";AutoHDREnable=1;") } else { $cur = $cur -replace "AutoHDREnable=\d", "AutoHDREnable=1" }
+    If ($cur -notmatch "AutoHDREnable") {
+        if ([string]::IsNullOrWhiteSpace($cur)) { $cur = "AutoHDREnable=1;" } else { $cur = ($cur.TrimEnd(";") + ";AutoHDREnable=1;") }
+    } else { $cur = $cur -replace "AutoHDREnable=\d", "AutoHDREnable=1" }
     Set-ItemPropertyVerified -Path $p -Name "DirectXUserGlobalSettings" -Type String -Value $cur
 }
 function Disable-AutoHdrOptimization() {
