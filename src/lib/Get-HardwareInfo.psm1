@@ -130,3 +130,25 @@ function Get-SystemSpec() {
 
     return $(Get-OSDriveType), $Separator, $WinVer, $DisplayedVersionResult, $Separator, $(Get-RAM), $Separator, $(Get-CPU -Separator $Separator), $Separator, $(Get-GPU)
 }
+
+function Get-GPUVendor() {
+    [CmdletBinding()]
+    [OutputType([String[]])]
+    param ()
+
+    $Vendors = @()
+
+    ForEach ($GpuName in (Get-CimInstance -Class Win32_VideoController | Select-Object -ExpandProperty Name)) {
+        If ($GpuName -match 'NVIDIA') {
+            $Vendors += "NVIDIA"
+        } ElseIf ($GpuName -match 'AMD|Radeon') {
+            $Vendors += "AMD"
+        } ElseIf ($GpuName -match 'Intel') {
+            $Vendors += "Intel"
+        } Else {
+            $Vendors += "Unknown"
+        }
+    }
+
+    return ($Vendors | Select-Object -Unique)
+}
